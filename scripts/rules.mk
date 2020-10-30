@@ -1,0 +1,127 @@
+ifeq ($(BUILDDIR),)
+	BUILDDIR=build
+endif
+SILENTCMD=
+ifndef VERBOSE
+	SILENTCMD=@
+endif
+
+OUTFILE?=out
+SRCDIR?=$(PWD)/src
+BSV=bsc
+PWD?=$(shell pwd)
+BSV_TOOLS:=$(BASE_DIR)/scripts/bsvTools.py
+BSV_DEPS:=$(BASE_DIR)/scripts/bsvDeps.py
+
+BSV_INCLUDEDIR?=$(PWD)/include
+
+USED_DIRECTORIES := $(BUILDDIR) $(BSV_INCLUDEDIR) $(EXTRA_DIRS)
+
+EMPTY :=
+SPACE := $(EMPTY) $(EMPTY)
+join-with = $(subst $(SPACE),$1,$(strip $2))
+
+LIBRARIES_BASE = %/Libraries $(SRCDIR) $(EXTRA_BSV_LIBS) $(BSV_INCLUDEDIR)
+LIBRARIES=$(call join-with,:,$(LIBRARIES_BASE))
+
+CXXFLAGS=-Wall -Wno-unused -g -D_FILE_OFFSET_BITS=64 -fPIC -Wno-uninitialized -fpermissive -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0 $(CXXFLAGS_EXTRA)
+ifdef CXX_NO_OPT
+CXXFLAGS += -O0
+else
+CXXFLAGS += -O3
+endif
+
+ifndef PARALLEL_SIM_LINK
+PARALLEL_SIM_LINK:=8
+endif
+
+
+ifeq ($(SIM_TYPE), VERILOG)
+VERILOGDIR=verilog
+BASEPARAMS=-verilog -vdir $(BUILDDIR)/$(VERILOGDIR) -vsim modelsim
+BASEPARAMS_SIM=-verilog -vdir $(VERILOGDIR) -vsim modelsim
+COMPILE_FLAGS=-fdir $(PWD) -simdir $(BUILDDIR) -bdir $(BUILDDIR) -info-dir $(BUILDDIR) -p $(LIBRARIES)
+COMPLETE_FLAGS=$(BASEPARAMS) $(COMPILE_FLAGS)
+USED_DIRECTORIES += $(BUILDDIR)/$(VERILOGDIR)
+
+ifdef VIVADO_ADD_PARAMS
+VIVADO_ADD_PARAMS := --additional $(VIVADO_ADD_PARAMS)
+endif
+
+ifdef VIVADO_INCLUDES
+VIVADO_INCLUDES := --includes $(VIVADO_INCLUDES)
+endif
+
+ifdef CONSTRAINT_FILES
+CONSTRAINT_FILES := --constraints $(CONSTRAINT_FILES)
+endif
+
+ifdef IGNORE_MODULES
+	EXCLUDED_VIVADO := --exclude  $(addsuffix .v, $(IGNORE_MODULES))
+endif
+
+ip_clean:
+	rm -rf $(BUILDDIR)/ip/$(PROJECT_NAME)
+
+ip: compile_top ip_clean
+	@echo "Creating IP $(PROJECT_NAME)"
+	$(SILENTCMD)cd $(BUILDDIR); $(BSV_TOOLS) . mkVivado $(PROJECT_NAME) $(TOP_MODULE) --verilog_dir $(VERILOGDIR) $(VERILOGDIR_EXTRAS) $(EXCLUDED_VIVADO) $(VIVADO_ADD_PARAMS) $(VIVADO_INCLUDES) $(CONSTRAINT_FILES)
+
+up_ip: compile_top
+	@echo "Updating IP $(PROJECT_NAME)"
+	$(SILENTCMD)cd $(BUILDDIR); $(BSV_TOOLS) . upVivado $(PROJECT_NAME) $(TOP_MODULE) $(EXCLUDED_VIVADO) $(VIVADO_ADD_PARAMS)
+
+sim_ip: compile_top
+
+compile_top: | directories
+	$(SILENTCMD)$(BSV) -elab -verilog $(COMPLETE_FLAGS) $(BSC_FLAGS) -g $(TOP_MODULE) -u $(SRCDIR)/$(MAIN_MODULE).bsv
+
+else
+BASEPARAMS=-sim
+BASEPARAMS_SIM=$(BASEPARAMS)
+COMPILE_FLAGS=-fdir $(PWD) -simdir $(BUILDDIR) -bdir $(BUILDDIR) -info-dir $(BUILDDIR) -p $(LIBRARIES)
+COMPLETE_FLAGS=$(BASEPARAMS) $(COMPILE_FLAGS)
+endif
+
+BSC_FLAGS=-cross-info \
+          -parallel-sim-link $(PARALLEL_SIM_LINK) \
+          $(EXTRA_FLAGS)
+
+ifdef VERBOSE
+BSC_FLAGS += -v
+endif
+
+SRCS=$(wildcard $(SRCDIR)/*.bsv)
+$(shell $(BSV_DEPS) $(SRCDIR) $(BUILDDIR) $(RUN_TEST) > .deps)
+include .deps
+
+$(USED_DIRECTORIES):
+	mkdir -p $@
+
+.DEFAULT_GOAL := all
+all: sim
+
+directories: $(USED_DIRECTORIES)
+
+compile: | directories
+	$(SILENTCMD)$(BSV) -elab $(COMPLETE_FLAGS) $(BSC_FLAGS) -g $(TESTBENCH_MODULE) -u $(TESTBENCH_FILE)
+
+$(BUILDDIR)/$(OUTFILE): compile
+	@echo Linking $@...
+	$(SILENTCMD)cd $(BUILDDIR); CXXFLAGS="$(CXXFLAGS)" bsc -e $(TESTBENCH_MODULE) -o $(notdir $@) $(BSC_FLAGS) $(BASEPARAMS_SIM) $(addprefix -l , $(EXTRA_LIBRARIES)) $(C_FILES) $(CPP_FILES)
+	@echo Linking finished
+
+sim: $(BUILDDIR)/$(OUTFILE)
+	@echo Simulating $<
+	$(SILENTCMD)cd $(BUILDDIR) && /bin/bash -c './$(OUTFILE) $(RUN_FLAGS) | tee simresult.tmp; (! grep -q "ERROR" simresult.tmp); retVal=$$?; rm simresult.tmp; exit $${retVal}'
+
+clean:
+	@echo "Cleaning working files"
+	$(SILENTCMD)rm -f $(BUILDDIR)/*.bo
+	$(SILENTCMD)rm -f $(BUILDDIR)/*.ba
+	$(SILENTCMD)rm -f $(BUILDDIR)/*.o
+	$(SILENTCMD)rm -f $(BUILDDIR)/$(OUTFILE)
+
+clean_all: clean
+	@echo "Cleaning all files"
+	$(SILENTCMD)rm -f $(BUILDDIR)
