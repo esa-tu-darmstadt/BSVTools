@@ -83,7 +83,7 @@ def executeVivado(tcl, vendor, projectname, ippath, tmpdir, topModule, additiona
     os.remove('temp.tcl')
     usedfiles = []
     s = t.decode()
-    success = re.match(r"VIVADO FINISHED SUCCESSFULLY", s)
+    success = re.search(r"VIVADO FINISHED SUCCESSFULLY", s)
     if success:
         print("Vivado finished successfully.")
     else:
