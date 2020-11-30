@@ -204,6 +204,10 @@ def main():
         print("Directory {} is not empty. Please run this script in an empty directory.".format(args.path))
         sys.exit(1)
 
+    if not args.project_name[0].isupper():
+        print("Project name needs to start with a capital letter. Please chose a different name.")
+        sys.exit(1)
+
     create_directories(args.path)
     create_makefile(args.path, args.project_name)
     create_base_src(args.path, args.project_name)
