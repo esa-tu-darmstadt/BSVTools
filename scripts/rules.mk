@@ -124,4 +124,4 @@ clean:
 
 clean_all: clean
 	@echo "Cleaning all files"
-	$(SILENTCMD)rm -f $(BUILDDIR)
+	$(SILENTCMD)rm -rf $(BUILDDIR)
