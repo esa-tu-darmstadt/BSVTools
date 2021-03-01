@@ -34,7 +34,7 @@ CONSTRAINT_FILES := ''
 EXTRA_BSV_LIBS:=
 EXTRA_LIBRARIES:=
 RUN_FLAGS:=
-BASE_DIR:={1}
+BSV_TOOLS?={1}
 
 PROJECT_NAME={0}
 
@@ -78,7 +78,7 @@ include $(PWD)/libraries/*/*.mk
 endif
 
 # Do not change: Include base makefile
-include {1}/scripts/rules.mk
+include $(BSV_TOOLS)/scripts/rules.mk
 """
 
 def create_makefile(path, project_name):
