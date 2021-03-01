@@ -1,6 +1,7 @@
 #!/bin/python
 
 import argparse, os, sys
+from bsvAdd import create_machine_file
 
 def dir_path(string):
     if os.path.isdir(string):
@@ -29,12 +30,15 @@ MAIN_MODULE={0}
 TESTBENCH_FILE=src/Testbench.bsv
 
 # Initialize
+include .bsv_tools
+ifndef BSV_TOOLS
+$(error BSV_TOOLS is not set (Check .bsv_tools or specify it through the command line))
+endif
 VIVADO_ADD_PARAMS := ''
 CONSTRAINT_FILES := ''
 EXTRA_BSV_LIBS:=
 EXTRA_LIBRARIES:=
 RUN_FLAGS:=
-BSV_TOOLS?={1}
 
 PROJECT_NAME={0}
 
@@ -85,6 +89,16 @@ def create_makefile(path, project_name):
     print("Creating makefile")
     with open("{}/Makefile".format(path), "w") as f:
         f.write(makefile_temp.format(project_name, os.path.abspath(os.path.dirname(__file__))))
+
+gitignore = """.deps
+.bsv_tools
+build
+"""
+
+def create_gitignore(path):
+    print("Creating gitignore")
+    with open("{}/.gitignore".format(path), "w") as f:
+        f.write(gitignore)
 
 top_module_temp = """package {0};
 
@@ -209,6 +223,8 @@ def main():
         sys.exit(1)
 
     create_directories(args.path)
+    create_machine_file(args.path)
+    create_gitignore(args.path)
     create_makefile(args.path, args.project_name)
     create_base_src(args.path, args.project_name)
 
