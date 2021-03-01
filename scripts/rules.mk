@@ -10,8 +10,8 @@ OUTFILE?=out
 SRCDIR?=$(PWD)/src
 BSV=bsc
 PWD?=$(shell pwd)
-BSV_TOOLS:=$(BASE_DIR)/scripts/bsvTools.py
-BSV_DEPS:=$(BASE_DIR)/scripts/bsvDeps.py
+BSV_TOOLS_PY:=$(BSV_TOOLS)/scripts/bsvTools.py
+BSV_DEPS:=$(BSV_TOOLS)/scripts/bsvDeps.py
 
 BSV_INCLUDEDIR?=$(PWD)/include
 
@@ -65,11 +65,11 @@ ip_clean:
 
 ip: compile_top ip_clean
 	@echo "Creating IP $(PROJECT_NAME)"
-	$(SILENTCMD)cd $(BUILDDIR); $(BSV_TOOLS) . mkVivado $(PROJECT_NAME) $(TOP_MODULE) --verilog_dir $(VERILOGDIR) $(VERILOGDIR_EXTRAS) $(EXCLUDED_VIVADO) $(VIVADO_ADD_PARAMS) $(VIVADO_INCLUDES) $(CONSTRAINT_FILES)
+	$(SILENTCMD)cd $(BUILDDIR); $(BSV_TOOLS_PY) . mkVivado $(PROJECT_NAME) $(TOP_MODULE) --verilog_dir $(VERILOGDIR) $(VERILOGDIR_EXTRAS) $(EXCLUDED_VIVADO) $(VIVADO_ADD_PARAMS) $(VIVADO_INCLUDES) $(CONSTRAINT_FILES)
 
 up_ip: compile_top
 	@echo "Updating IP $(PROJECT_NAME)"
-	$(SILENTCMD)cd $(BUILDDIR); $(BSV_TOOLS) . upVivado $(PROJECT_NAME) $(TOP_MODULE) $(EXCLUDED_VIVADO) $(VIVADO_ADD_PARAMS)
+	$(SILENTCMD)cd $(BUILDDIR); $(BSV_TOOLS_PY) . upVivado $(PROJECT_NAME) $(TOP_MODULE) $(EXCLUDED_VIVADO) $(VIVADO_ADD_PARAMS)
 
 sim_ip: compile_top
 
