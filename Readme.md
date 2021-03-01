@@ -68,11 +68,17 @@ Have the bluespec compiler and Python 3 installed.
 git clone github.com/esa-tu-darmstadt/BSVTools.git
 ```
 2. Create a new directory for the Bluespec project
-3. Run `path/to/BSVTools/bsvNew.py PROJECT_NAME TOP_LEVEL`
+3. Run `path/to/BSVTools/bsvNew.py PROJECT_NAME`
 4. (Optional) Add libraries to the created library directory (e.g. BlueAXI or BlueLib)
 
 The script creates a number of basic Bluespec modules that can be extended as desired.
 
+#### On a second machine
+
+BSVTools stores device specific information in the file `.bsv_tools`. By default this file is excluded from Git using `.gitignore`.
+A new `.bsv_tools` file can be created using:
+
+1. Run `path/to/BSVTools/bsvAdd.py`
 
 ## Usage
 
