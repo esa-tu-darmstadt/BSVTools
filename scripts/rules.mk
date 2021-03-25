@@ -24,7 +24,11 @@ join-with = $(subst $(SPACE),$1,$(strip $2))
 LIBRARIES_BASE = %/Libraries $(SRCDIR) $(EXTRA_BSV_LIBS) $(BSV_INCLUDEDIR)
 LIBRARIES=$(call join-with,:,$(LIBRARIES_BASE))
 
-CXXFLAGS=-Wall -Wno-unused -g -D_FILE_OFFSET_BITS=64 -fPIC -Wno-uninitialized -fpermissive -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0 $(CXXFLAGS_EXTRA)
+CXXFLAGS:=$(CXXFLAGS_EXTRA)
+ifdef CXX_COMPAT
+CXXFLAGS += -D_GLIBCXX_USE_CXX11_ABI=0 
+endif
+
 ifdef CXX_NO_OPT
 CXXFLAGS += -O0
 else
