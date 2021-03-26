@@ -6,6 +6,13 @@ ifndef VERBOSE
 	SILENTCMD=@
 endif
 
+ZIP:=""
+ifeq (, $(shell which zip))
+	$(error "No zip in $(PATH), make ip will not generate zip file")
+else
+	ZIP:=$(shell which zip)
+endif
+
 OUTFILE?=out
 SRCDIR?=$(PWD)/src
 BSV=bsc
@@ -66,10 +73,14 @@ endif
 
 ip_clean:
 	rm -rf $(BUILDDIR)/ip/$(PROJECT_NAME)
+	rm -f $(BUILDDIR)/ip/$(PROJECT_NAME).zip
 
 ip: compile_top ip_clean
 	@echo "Creating IP $(PROJECT_NAME)"
 	$(SILENTCMD)cd $(BUILDDIR); $(BSV_TOOLS_PY) . mkVivado $(PROJECT_NAME) $(TOP_MODULE) --verilog_dir $(VERILOGDIR) $(VERILOGDIR_EXTRAS) $(EXCLUDED_VIVADO) $(VIVADO_ADD_PARAMS) $(VIVADO_INCLUDES) $(CONSTRAINT_FILES)
+ifneq (, $(ZIP))
+	$(SILENTCMD)cd $(BUILDDIR)/ip && $(ZIP) -r $(PROJECT_NAME).zip $(PROJECT_NAME)
+endif
 
 up_ip: compile_top
 	@echo "Updating IP $(PROJECT_NAME)"
