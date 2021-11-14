@@ -65,7 +65,7 @@ Have the bluespec compiler and Python 3 installed.
 
 1. Clone the repo
 ```sh
-git clone github.com/esa-tu-darmstadt/BSVTools.git
+git clone https://github.com/esa-tu-darmstadt/BSVTools.git
 ```
 2. Create a new directory for the Bluespec project
 3. Run `path/to/BSVTools/bsvNew.py PROJECT_NAME`
