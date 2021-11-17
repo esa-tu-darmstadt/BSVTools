@@ -8,7 +8,7 @@ endif
 
 ZIP:=""
 ifeq (, $(shell which zip))
-	$(error "No zip in $(PATH), make ip will not generate zip file")
+$(warning "No zip in $(PATH), make ip will not generate zip file")
 else
 	ZIP:=$(shell which zip)
 endif
