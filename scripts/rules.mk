@@ -128,7 +128,7 @@ $(BUILDDIR)/$(OUTFILE): compile
 
 sim: $(BUILDDIR)/$(OUTFILE)
 	@echo Simulating $<
-	$(SILENTCMD)cd $(BUILDDIR) && /bin/bash -c './$(OUTFILE) $(RUN_FLAGS) | tee simresult.tmp; (! grep -q "ERROR" simresult.tmp); retVal=$$?; rm simresult.tmp; exit $${retVal}'
+	$(SILENTCMD)cd $(BUILDDIR) && bash -c './$(OUTFILE) $(RUN_FLAGS) | tee simresult.tmp; (! grep -q "ERROR" simresult.tmp); retVal=$$?; rm simresult.tmp; exit $${retVal}'
 
 clean:
 	@echo "Cleaning working files"
