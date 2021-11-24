@@ -20,6 +20,10 @@ PWD?=$(shell pwd)
 BSV_TOOLS_PY:=$(BSV_TOOLS)/scripts/bsvTools.py
 BSV_DEPS:=$(BSV_TOOLS)/scripts/bsvDeps.py
 
+BASH:=$(shell which bash)
+RM:=$(shell which rm)
+MKDIR:=$(shell which mkdir)
+
 BSV_INCLUDEDIR?=$(PWD)/include
 
 USED_DIRECTORIES := $(BUILDDIR) $(BSV_INCLUDEDIR) $(EXTRA_DIRS)
@@ -72,8 +76,8 @@ ifdef IGNORE_MODULES
 endif
 
 ip_clean:
-	rm -rf $(BUILDDIR)/ip/$(PROJECT_NAME)
-	rm -f $(BUILDDIR)/ip/$(PROJECT_NAME).zip
+	$(RM) -rf $(BUILDDIR)/ip/$(PROJECT_NAME)
+	$(RM) -f $(BUILDDIR)/ip/$(PROJECT_NAME).zip
 
 ip: compile_top ip_clean
 	@echo "Creating IP $(PROJECT_NAME)"
@@ -111,7 +115,7 @@ $(shell $(BSV_DEPS) $(SRCDIR) $(BUILDDIR) $(RUN_TEST) > .deps)
 include .deps
 
 $(USED_DIRECTORIES):
-	mkdir -p $@
+	$(MKDIR) -p $@
 
 .DEFAULT_GOAL := all
 all: sim
@@ -128,15 +132,15 @@ $(BUILDDIR)/$(OUTFILE): compile
 
 sim: $(BUILDDIR)/$(OUTFILE)
 	@echo Simulating $<
-	$(SILENTCMD)cd $(BUILDDIR) && /bin/bash -c './$(OUTFILE) $(RUN_FLAGS) | tee simresult.tmp; (! grep -q "ERROR" simresult.tmp); retVal=$$?; rm simresult.tmp; exit $${retVal}'
+	$(SILENTCMD)cd $(BUILDDIR) && $(BASH) -c './$(OUTFILE) $(RUN_FLAGS) | tee simresult.tmp; (! grep -q "ERROR" simresult.tmp); retVal=$$?; $(RM) simresult.tmp; exit $${retVal}'
 
 clean:
 	@echo "Cleaning working files"
-	$(SILENTCMD)rm -f $(BUILDDIR)/*.bo
-	$(SILENTCMD)rm -f $(BUILDDIR)/*.ba
-	$(SILENTCMD)rm -f $(BUILDDIR)/*.o
-	$(SILENTCMD)rm -f $(BUILDDIR)/$(OUTFILE)
+	$(SILENTCMD)$(RM) -f $(BUILDDIR)/*.bo
+	$(SILENTCMD)$(RM) -f $(BUILDDIR)/*.ba
+	$(SILENTCMD)$(RM) -f $(BUILDDIR)/*.o
+	$(SILENTCMD)$(RM) -f $(BUILDDIR)/$(OUTFILE)
 
 clean_all: clean
 	@echo "Cleaning all files"
-	$(SILENTCMD)rm -rf $(BUILDDIR)
+	$(SILENTCMD)$(RM) -rf $(BUILDDIR)
