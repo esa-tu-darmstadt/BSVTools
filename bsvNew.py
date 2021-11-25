@@ -15,6 +15,12 @@ def is_dir_empty(path):
     else:
         return False
 
+def is_legal_name(project_name):
+    if project_name.find('-') != -1 or project_name == 'Action' or project_name == 'ActionValue' or project_name == 'valueOf':
+        return False
+    else:
+        return True
+
 def create_directories(path):
     print("Creating base directories.")
     os.mkdir("{}/src".format(path))
@@ -220,6 +226,10 @@ def main():
 
     if not args.project_name[0].isupper():
         print("Project name needs to start with a capital letter. Please chose a different name.")
+        sys.exit(1)
+    
+    if not is_legal_name(args.project_name):
+        print("Project name needs to NOT have '-' in the name ant NOT be any special keyword. \nPlease chose a different name")
         sys.exit(1)
 
     create_directories(args.path)
