@@ -16,7 +16,8 @@ def is_dir_empty(path):
         return False
 
 def is_legal_name(project_name):
-    if project_name.find('-') != -1 or project_name == 'Action' or project_name == 'ActionValue' or project_name == 'valueOf':
+    keywords = ['Action', 'ActionValue']
+    if '-' in project_name or project_name in keywords:
         return False
     else:
         return True
