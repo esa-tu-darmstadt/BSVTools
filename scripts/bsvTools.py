@@ -61,14 +61,15 @@ def copyNGC(src, dest, exclude):
 
 def copyVerilog(src, dest, exclude):
     for path in src:
-        if path.endswith('.v') or path.endswith('.vhd') or path.endswith('.h'):
+        if path.endswith('.v') or path.endswith('.vhd') or path.endswith('.h') or path.endswith('.sv'):
             if not os.path.basename(path) in exclude:
                     flattenVerilogIncludes(path, dest)
         else:
             verilogfiles = glob.glob(os.path.join(path, '*.v'))
+            sysverilogfiles = glob.glob(os.path.join(path, '*.sv'))
             vhdlfiles = glob.glob(os.path.join(path, '*.vhd'))
             headerfiles = glob.glob(os.path.join(path, '*.h'))
-            allfiles = verilogfiles + vhdlfiles + headerfiles
+            allfiles = verilogfiles + vhdlfiles + headerfiles + sysverilogfiles
             for filename in allfiles:
                 if not os.path.basename(filename) in exclude:
                     flattenVerilogIncludes(filename, dest)
