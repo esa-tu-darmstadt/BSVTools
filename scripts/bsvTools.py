@@ -74,13 +74,32 @@ def copyVerilog(src, dest, exclude):
                 if not os.path.basename(filename) in exclude:
                     flattenVerilogIncludes(filename, dest)
 
+def wslpath(path):
+    """converts the linux path to the corresponding windows path"""
+    process = subprocess.run(["wslpath", "-m", path], capture_output=True)
+    wpath = process.stdout.decode().replace('\n', '') # wslpath ends its output with \n
+    if process.returncode != 0:
+        print("Could not convert {path} to windows path".format(path=path))
+        return path # something went wrong, maybe the path did not exist?
+    return wpath
+
+
 def executeVivado(tcl, vendor, projectname, ippath, tmpdir, topModule, additional, includes):
+    vivadoCmd = "vivado"
+    # check whether we are running in WSL
+    if os.getenv("WSL_DISTRO_NAME") is not None:
+        print("Detected that we are running in WSL")
+        vivadoCmd = "cmd.exe /c vivado.bat" # run vivado.bat through cmd.exe
+        ippath = wslpath(ippath) # convert linux paths to windows paths
+        tmpdir = wslpath(tmpdir)
+        includes = [wslpath(include) for include in includes]
+
     if which("vivado") is None:
         print("Could not find \"vivado\". Make sure Vivado is in the path.")
         sys.exit(1)
     with open('temp.tcl', "w+") as f:
         f.write(tcl.format(vendor=vendor,directory=ippath,projectname=projectname,tmpdir=tmpdir,topModule=topModule, additional_parameters=additional, includes=" ".join(includes)))
-    t = subprocess.Popen("vivado -mode batch -source temp.tcl -nojournal -nolog", shell=True, stdout=subprocess.PIPE).stdout.read()
+    t = subprocess.Popen(vivadoCmd + " -mode batch -source temp.tcl -nojournal -nolog", shell=True, stdout=subprocess.PIPE).stdout.read()
     os.remove('temp.tcl')
     usedfiles = []
     s = t.decode()
