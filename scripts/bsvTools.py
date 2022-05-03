@@ -23,7 +23,7 @@ set_property name {projectname} [ipx::current_core]
 set_property display_name {projectname} [ipx::current_core]
 set_property description {projectname} [ipx::current_core]
 set_property core_revision 1 [ipx::current_core]
-set_property supported_families {{zynq Pre-Production virtex7 Pre-Production kintex7 Pre-Production artix7 Pre-Production zynquplus Pre-Production virtex7 Pre-Production qvirtex7 Pre-Production kintex7 Pre-Production kintex7l Pre-Production qkintex7 Pre-Production qkintex7l Pre-Production artix7 Pre-Production artix7l Pre-Production aartix7 Pre-Production qartix7 Pre-Production zynq Pre-Production qzynq Pre-Production azynq Pre-Production spartan7 Pre-Production virtexu Pre-Production virtexuplus Pre-Production virtexuplusHBM Pre-Production kintexuplus Pre-Production zynquplus Pre-Production kintexu Pre-Production versal Pre-Production}} [ipx::current_core]
+set_property AUTO_FAMILY_SUPPORT_LEVEL level_1 [ipx::current_core]
 foreach f {{ {includes} }} {{
     set_property is_global_include true [get_files $f]
 }}
