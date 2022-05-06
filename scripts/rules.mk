@@ -127,7 +127,7 @@ compile: | directories
 
 $(BUILDDIR)/$(OUTFILE): compile
 	@echo Linking $@...
-	$(SILENTCMD)cd $(BUILDDIR); CXXFLAGS="$(CXXFLAGS)" bsc -e $(TESTBENCH_MODULE) -o $(notdir $@) $(BSC_FLAGS) $(BASEPARAMS_SIM) $(addprefix -l , $(EXTRA_LIBRARIES)) $(C_FILES) $(CPP_FILES)
+	$(SILENTCMD)cd $(BUILDDIR); CXXFLAGS="$(CXXFLAGS)" $(BSV) -e $(TESTBENCH_MODULE) -o $(notdir $@) $(BSC_FLAGS) $(BASEPARAMS_SIM) $(addprefix -l , $(EXTRA_LIBRARIES)) $(C_FILES) $(CPP_FILES)
 	@echo Linking finished
 
 sim: $(BUILDDIR)/$(OUTFILE)
