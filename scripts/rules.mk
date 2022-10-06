@@ -100,7 +100,7 @@ up_ip: compile_top
 
 sim_ip: compile_top
 
-compile_top: | directories
+compile_top: $(BUILDDIR)/bsc_defines | directories
 	$(SILENTCMD)$(BSV) -elab -verilog $(COMPLETE_FLAGS) $(BSC_FLAGS) -g $(TOP_MODULE) -u $(SRCDIR)/$(MAIN_MODULE).bsv
 
 else
@@ -120,9 +120,13 @@ $(USED_DIRECTORIES):
 .DEFAULT_GOAL := all
 all: sim
 
+.PHONY: force
+$(BUILDDIR)/bsc_defines: force
+	@echo '$(BSC_FLAGS)' | cmp -s - $@ || (echo '$(BSC_FLAGS)' > $@ ; $(MAKE) clean_project)
+
 directories: $(USED_DIRECTORIES)
 
-compile: | directories
+compile: $(BUILDDIR)/bsc_defines | directories
 	$(SILENTCMD)$(BSV) -elab $(COMPLETE_FLAGS) $(BSC_FLAGS) -g $(TESTBENCH_MODULE) -u $(TESTBENCH_FILE)
 
 $(BUILDDIR)/$(OUTFILE): compile
@@ -139,6 +143,14 @@ clean:
 	$(SILENTCMD)$(RM) -f $(BUILDDIR)/*.bo
 	$(SILENTCMD)$(RM) -f $(BUILDDIR)/*.ba
 	$(SILENTCMD)$(RM) -f $(BUILDDIR)/*.o
+	$(SILENTCMD)$(RM) -f $(BUILDDIR)/$(OUTFILE)
+
+# clean build files except libraries
+BINS=$(addprefix $(BUILDDIR)/,$(notdir $(basename $(SRCS))))
+clean_project:
+	$(SILENTCMD)$(RM) -f $(addsuffix .bo,$(BINS))
+	$(SILENTCMD)$(RM) -f $(addsuffix .ba,$(BINS))
+	$(SILENTCMD)$(RM) -f $(addsuffix .o,$(BINS))
 	$(SILENTCMD)$(RM) -f $(BUILDDIR)/$(OUTFILE)
 
 clean_all: clean
