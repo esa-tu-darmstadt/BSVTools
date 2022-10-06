@@ -50,6 +50,13 @@ ifndef PARALLEL_SIM_LINK
 PARALLEL_SIM_LINK:=8
 endif
 
+BSC_FLAGS=-cross-info \
+          -parallel-sim-link $(PARALLEL_SIM_LINK) \
+          $(EXTRA_FLAGS)
+
+ifdef VERBOSE
+BSC_FLAGS += -v
+endif
 
 ifeq ($(SIM_TYPE), VERILOG)
 VERILOGDIR=verilog
@@ -58,6 +65,7 @@ BASEPARAMS_SIM=-verilog -vdir $(VERILOGDIR) -vsim modelsim
 COMPILE_FLAGS=-fdir $(PWD) -simdir $(BUILDDIR) -bdir $(BUILDDIR) -info-dir $(BUILDDIR) -p $(LIBRARIES)
 COMPLETE_FLAGS=$(BASEPARAMS) $(COMPILE_FLAGS)
 USED_DIRECTORIES += $(BUILDDIR)/$(VERILOGDIR)
+BSC_FLAGS += -D VERILOG
 
 ifdef VIVADO_ADD_PARAMS
 VIVADO_ADD_PARAMS := --additional $(VIVADO_ADD_PARAMS)
@@ -100,14 +108,6 @@ BASEPARAMS=-sim
 BASEPARAMS_SIM=$(BASEPARAMS)
 COMPILE_FLAGS=-fdir $(PWD) -simdir $(BUILDDIR) -bdir $(BUILDDIR) -info-dir $(BUILDDIR) -p $(LIBRARIES)
 COMPLETE_FLAGS=$(BASEPARAMS) $(COMPILE_FLAGS)
-endif
-
-BSC_FLAGS=-cross-info \
-          -parallel-sim-link $(PARALLEL_SIM_LINK) \
-          $(EXTRA_FLAGS)
-
-ifdef VERBOSE
-BSC_FLAGS += -v
 endif
 
 SRCS=$(wildcard $(SRCDIR)/*.bsv)
