@@ -45,12 +45,10 @@ This project provides helper scripts that can be used to create Bluespec project
   - Compile and simulate using `bsc` supported Verilog simulators
   - Build IP-XACT Packets for use in Xilinx Vivado
 
-
-
 ### Built With
 
 * Python 3
-* Bluespec Compiler
+* Bluespec Compiler [`bsc`](https://github.com/B-Lang-org/bsc)
 
 
 ## Getting Started
@@ -64,33 +62,37 @@ Have the bluespec compiler and Python 3 installed.
 ### Installation
 
 1. Clone the repo
-```sh
+```bash
 git clone https://github.com/esa-tu-darmstadt/BSVTools.git
 ```
 2. Create a new directory for the Bluespec project
-3. Run `path/to/BSVTools/bsvNew.py PROJECT_NAME`
-4. (Optional) Add libraries to the created library directory (e.g. BlueAXI or BlueLib)
+3. Run the following command to create all necessary files for the Bluespec project. The `--test_dir` is for big projects where it is better to separate testbench from source code.
+```bash
+path/to/BSVTools/bsvNew.py PROJECT_NAME [--test_dir]
+```
+4. (Optional) Add libraries to the created library directory (e.g. [BlueAXI](https://github.com/esa-tu-darmstadt/BlueAXI) or [BlueLib](https://github.com/esa-tu-darmstadt/BlueLib))
 
 The script creates a number of basic Bluespec modules that can be extended as desired.
 
 #### On a second machine
 
-BSVTools stores device specific information in the file `.bsv_tools`. By default this file is excluded from Git using `.gitignore`.
-A new `.bsv_tools` file can be created using:
+BSVTools stores device specific information in the file `.bsv_tools`. By default this file is excluded from Git using `.gitignore`. A new `.bsv_tools` file can be created using:
 
-1. Run `path/to/BSVTools/bsvAdd.py`
+```bash
+path/to/BSVTools/bsvAdd.py
+```
 
 ## Usage
 
 Simulate using Bluesim
 
-```sh
+```bash
 make
 ```
 
 Simulate using Verilog (Modelsim/Questasim by default)
 
-```sh
+```bash
 make SIM_TYPE=VERILOG
 ```
 
