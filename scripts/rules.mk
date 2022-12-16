@@ -32,7 +32,7 @@ EMPTY :=
 SPACE := $(EMPTY) $(EMPTY)
 join-with = $(subst $(SPACE),$1,$(strip $2))
 
-LIBRARIES_BASE = %/Libraries $(SRCDIR) $(EXTRA_BSV_LIBS) $(BSV_INCLUDEDIR)
+LIBRARIES_BASE = %/Libraries $(SRCDIR) $(TEST_DIR) $(EXTRA_BSV_LIBS) $(BSV_INCLUDEDIR)
 LIBRARIES=$(call join-with,:,$(LIBRARIES_BASE))
 
 CXXFLAGS:=$(CXXFLAGS_EXTRA)
@@ -111,7 +111,10 @@ COMPLETE_FLAGS=$(BASEPARAMS) $(COMPILE_FLAGS)
 endif
 
 SRCS=$(wildcard $(SRCDIR)/*.bsv)
-$(shell $(BSV_DEPS) $(SRCDIR) $(BUILDDIR) $(RUN_TEST) > .deps)
+ifdef TEST_DIR
+SRCS+=$(wildcard $(TEST_DIR)/*.bsv)
+endif
+$(shell $(BSV_DEPS) $(SRCDIR) $(TEST_DIR) $(BUILDDIR) $(RUN_TEST) > .deps)
 include .deps
 
 $(USED_DIRECTORIES):
