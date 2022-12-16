@@ -22,9 +22,11 @@ def is_legal_name(project_name):
     else:
         return True
 
-def create_directories(path):
+def create_directories(path, test_dir):
     print("Creating base directories.")
     os.mkdir("{}/src".format(path))
+    if test_dir:
+        os.mkdir("{}/test".format(path))
     os.mkdir("{}/libraries".format(path))
 
 makefile_temp = """###
@@ -34,7 +36,8 @@ TOP_MODULE=mk{0}
 TESTBENCH_MODULE=mkTestbench
 IGNORE_MODULES=mkTestbench mkTestsMainTest
 MAIN_MODULE={0}
-TESTBENCH_FILE=src/Testbench.bsv
+TESTBENCH_FILE={1}/Testbench.bsv
+{2}
 
 # Initialize
 -include .bsv_tools
@@ -92,10 +95,12 @@ endif
 include $(BSV_TOOLS)/scripts/rules.mk
 """
 
-def create_makefile(path, project_name):
+def create_makefile(path, project_name, test_dir):
     print("Creating makefile")
+    dir = 'src' if not test_dir else 'test'
+    test_var = '' if not test_dir else 'TEST_DIR=$(PWD)/test'
     with open("{}/Makefile".format(path), "w") as f:
-        f.write(makefile_temp.format(project_name, os.path.abspath(os.path.dirname(__file__))))
+        f.write(makefile_temp.format(project_name, dir, test_var))
 
 gitignore = """.deps
 .bsv_tools
@@ -195,24 +200,27 @@ testmain_temp = """package TestsMainTest;
 endpackage
 """
 
-def create_base_src(path, project_name):
+def create_base_src(path, project_name, test_dir):
     print("Creating main module")
     with open("{}/src/{}.bsv".format(path, project_name), "w") as f:
         f.write(top_module_temp.format(project_name))
+        
+    dir = 'src' if not test_dir else 'test'
 
-    with open("{}/src/Testbench.bsv".format(path), "w") as f:
+    with open("{}/{}/Testbench.bsv".format(path, dir), "w") as f:
         f.write(testbench_temp)
 
-    with open("{}/src/TestsMainTest.bsv".format(path), "w") as f:
+    with open("{}/{}/TestsMainTest.bsv".format(path, dir), "w") as f:
         f.write(testmain_temp.format(project_name))
 
-    with open("{}/src/TestHelper.bsv".format(path), "w") as f:
+    with open("{}/{}/TestHelper.bsv".format(path, dir), "w") as f:
         f.write(testhelper_temp)
 
 def main():
     parser = argparse.ArgumentParser(description="Create a new BSV project")
     parser.add_argument('--path', type=dir_path, default='./')
     parser.add_argument('project_name')
+    parser.add_argument('--test_dir', help='Set in case want to separate in src and test folder', action='store_true')
 
     args = None
     try:
@@ -220,7 +228,7 @@ def main():
     except NotADirectoryError as e:
         print("Path has to be a valid directory, got: {}.".format(e))
         sys.exit(1)
-
+    
     if not is_dir_empty(args.path):
         print("Directory {} is not empty. Please run this script in an empty directory.".format(args.path))
         sys.exit(1)
@@ -233,11 +241,11 @@ def main():
         print("Project name needs to NOT have '-' in the name ant NOT be any special keyword. \nPlease chose a different name")
         sys.exit(1)
 
-    create_directories(args.path)
+    create_directories(args.path, args.test_dir)
     create_machine_file(args.path)
     create_gitignore(args.path)
-    create_makefile(args.path, args.project_name)
-    create_base_src(args.path, args.project_name)
+    create_makefile(args.path, args.project_name, args.test_dir)
+    create_base_src(args.path, args.project_name, args.test_dir)
 
 if __name__ == "__main__":
     main()
