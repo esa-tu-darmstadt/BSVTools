@@ -49,9 +49,20 @@ puts "VIVADO FINISHED SUCCESSFULLY"
 
 def copyBSVVerilog(src, dest):
     for filename in glob.glob(os.path.join(src, 'Verilog', '*.v')):
-        shutil.copy(filename, dest)
+        addLicenseHeader(shutil.copy(filename, dest))
     for filename in glob.glob(os.path.join(src, 'Verilog.Vivado', '*.v')):
-        shutil.copy(filename, dest)
+        addLicenseHeader(shutil.copy(filename, dest))
+
+
+def addLicenseHeader(file):
+    header = """/*
+    SPDX-License-Identifier: BSD-3-Clause
+
+    SPDX-FileCopyrightText: Copyright (c) 2020 Bluespec, Inc. All rights reserved.
+*/
+"""
+    f = open(file, 'r').read()
+    open(file, 'w').write(header + f)
 
 def copyNGC(src, dest, exclude):
     for path in src:
