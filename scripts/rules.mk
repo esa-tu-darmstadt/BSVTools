@@ -94,12 +94,6 @@ ifneq (, $(ZIP))
 	$(SILENTCMD)cd $(BUILDDIR)/ip && $(ZIP) -r $(PROJECT_NAME).zip $(PROJECT_NAME)
 endif
 
-up_ip: compile_top
-	@echo "Updating IP $(PROJECT_NAME)"
-	$(SILENTCMD)cd $(BUILDDIR); $(BSV_TOOLS_PY) . upVivado $(PROJECT_NAME) $(TOP_MODULE) $(EXCLUDED_VIVADO) $(VIVADO_ADD_PARAMS)
-
-sim_ip: compile_top
-
 compile_top: $(BUILDDIR)/bsc_defines | directories
 	$(SILENTCMD)$(BSV) -elab -verilog $(COMPLETE_FLAGS) $(BSC_FLAGS) -g $(TOP_MODULE) -u $(SRCDIR)/$(MAIN_MODULE).bsv
 
