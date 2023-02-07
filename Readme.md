@@ -67,10 +67,14 @@ git clone https://github.com/esa-tu-darmstadt/BSVTools.git
 ```
 2. Create a new directory for the Bluespec project
 3. Run the following command to create all necessary files for the Bluespec project. The `--test_dir` is for big projects where it is better to separate testbench from source code.
+
 ```bash
 path/to/BSVTools/bsvNew.py PROJECT_NAME [--test_dir]
 ```
+
 4. (Optional) Add libraries to the created library directory (e.g. [BlueAXI](https://github.com/esa-tu-darmstadt/BlueAXI) or [BlueLib](https://github.com/esa-tu-darmstadt/BlueLib))
+
+5. (Optional) Download the extension [Code Spell Checker](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker) to manage misspelling errors during the development process. The new project created with `bsvNew.py` is ready to use with it.
 
 The script creates a number of basic Bluespec modules that can be extended as desired.
 
