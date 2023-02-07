@@ -1,0 +1,8 @@
+BUILDDIR
+endef
+ifeq
+ifndef
+ifneq
+SILENTCMD
+SRCDIR
+TESTNAME

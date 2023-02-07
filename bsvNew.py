@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
 import argparse, os, sys
+from distutils.dir_util import copy_tree
+
 from bsvAdd import create_machine_file
+
 
 def dir_path(string):
     if os.path.isdir(string):
@@ -9,11 +12,13 @@ def dir_path(string):
     else:
         raise NotADirectoryError(string)
 
+
 def is_dir_empty(path):
     if not os.listdir(path):
         return True
     else:
         return False
+
 
 def is_legal_name(project_name):
     keywords = ['Action', 'ActionValue']
@@ -22,12 +27,14 @@ def is_legal_name(project_name):
     else:
         return True
 
+
 def create_directories(path, test_dir):
     print("Creating base directories.")
     os.mkdir("{}/src".format(path))
     if test_dir:
         os.mkdir("{}/test".format(path))
     os.mkdir("{}/libraries".format(path))
+
 
 makefile_temp = """###
 # DO NOT CHANGE
@@ -95,6 +102,7 @@ endif
 include $(BSV_TOOLS)/scripts/rules.mk
 """
 
+
 def create_makefile(path, project_name, test_dir):
     print("Creating makefile")
     dir = 'src' if not test_dir else 'test'
@@ -102,15 +110,74 @@ def create_makefile(path, project_name, test_dir):
     with open("{}/Makefile".format(path), "w") as f:
         f.write(makefile_temp.format(project_name, dir, test_var))
 
+
 gitignore = """.deps
 .bsv_tools
+.vscode
 build
 """
+
 
 def create_gitignore(path):
     print("Creating gitignore")
     with open("{}/.gitignore".format(path), "w") as f:
         f.write(gitignore)
+
+
+settings = """{
+    # In order to use the spell check in BSV and Makefile, it is necessary the extension Code Spell Checker
+    "cSpell.enabledLanguageIds": [
+        "bsv",
+        "makefile"
+    ],
+    "cSpell.enableFiletypes": [
+        "bsv",
+        "makefile"
+    ]
+}
+"""
+
+cpell_json = """{
+    "dictionaryDefinitions": [
+        {
+            "name": "dict_bluespec",
+            "path": "dict/bluespec.txt",
+            "addWords": true
+        },
+        {
+            "name": "dict_makefile",
+            "path": "dict/makefile.txt",
+            "addWords": true
+        }
+    ],
+    "languageSettings": [
+        {
+            "languageId": "makefile",
+            "dictionaries": [
+                "dict_makefile"
+            ]
+        },
+        {
+            "languageId": "bsv",
+            "dictionaries": [
+                "dict_bluespec"
+            ]
+        }
+    ]
+}
+"""
+
+
+def create_vscode_settings(path):
+    print("Creating vscode settings")
+    os.mkdir(f"{path}/.vscode")
+    cwd = os.path.dirname(__file__)
+    with open(f"{path}/.vscode/settings.json", "w") as f:
+        f.write(settings)
+    with open(f"{path}/.vscode/cspell.json", "w") as f:
+        f.write(cpell_json)
+    copy_tree(f"{cwd}/dict", f"{path}/.vscode/dict")
+
 
 top_module_temp = """package {0};
 
@@ -200,11 +267,12 @@ testmain_temp = """package TestsMainTest;
 endpackage
 """
 
+
 def create_base_src(path, project_name, test_dir):
     print("Creating main module")
     with open("{}/src/{}.bsv".format(path, project_name), "w") as f:
         f.write(top_module_temp.format(project_name))
-        
+
     dir = 'src' if not test_dir else 'test'
 
     with open("{}/{}/Testbench.bsv".format(path, dir), "w") as f:
@@ -215,6 +283,7 @@ def create_base_src(path, project_name, test_dir):
 
     with open("{}/{}/TestHelper.bsv".format(path, dir), "w") as f:
         f.write(testhelper_temp)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Create a new BSV project")
@@ -228,7 +297,7 @@ def main():
     except NotADirectoryError as e:
         print("Path has to be a valid directory, got: {}.".format(e))
         sys.exit(1)
-    
+
     if not is_dir_empty(args.path):
         print("Directory {} is not empty. Please run this script in an empty directory.".format(args.path))
         sys.exit(1)
@@ -236,7 +305,7 @@ def main():
     if not args.project_name[0].isupper():
         print("Project name needs to start with a capital letter. Please chose a different name.")
         sys.exit(1)
-    
+
     if not is_legal_name(args.project_name):
         print("Project name needs to NOT have '-' in the name ant NOT be any special keyword. \nPlease chose a different name")
         sys.exit(1)
@@ -246,6 +315,8 @@ def main():
     create_gitignore(args.path)
     create_makefile(args.path, args.project_name, args.test_dir)
     create_base_src(args.path, args.project_name, args.test_dir)
+    create_vscode_settings(args.path)
+
 
 if __name__ == "__main__":
     main()
