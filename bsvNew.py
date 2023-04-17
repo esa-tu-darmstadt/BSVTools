@@ -177,7 +177,7 @@ testmain_temp = """package TestsMainTest;
     import {0} :: *;
 
     (* synthesize *)
-    module [Module] mkTestsMainTest(TestHandler);
+    module [Module] mkTestsMainTest(TestHelper::TestHandler);
 
         {0} dut <- mk{0}();
 
