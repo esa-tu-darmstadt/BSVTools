@@ -66,7 +66,7 @@ Have the bluespec compiler and Python 3 installed.
 git clone https://github.com/esa-tu-darmstadt/BSVTools.git
 ```
 2. Create a new directory for the Bluespec project
-3. Run the following command to create all necessary files for the Bluespec project. The `--test_dir` is for big projects where it is better to separate testbench from source code.
+3. Run the following command to create all necessary files for the Bluespec project. The `--test_dir` is for big projects where it is better to separate testbench from source code. Optionally specify interfaces which should be added to the Bluespec module with `--interfaces <interface>` (e.g., for a [TaPaSCo](https://github.com/esa-tu-darmstadt/tapasco) PE with memory access use`--interfaces tapasco axi-master`).
 ```bash
 path/to/BSVTools/bsvNew.py PROJECT_NAME [--test_dir]
 ```
