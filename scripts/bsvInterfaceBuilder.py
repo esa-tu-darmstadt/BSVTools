@@ -240,3 +240,7 @@ available_interfaces = {
     'axi-slave': AXI4MMSlave(),
     'axi-lite-slave': AXI4MMLiteSlave(),
 }
+
+def list_available_interfaces() :
+    aliases = ["axis", "tapasco"]
+    return aliases + list(available_interfaces.keys())

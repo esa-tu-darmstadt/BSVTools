@@ -2,7 +2,7 @@
 
 import argparse, os, sys
 from bsvAdd import create_machine_file
-from scripts.bsvInterfaceBuilder import create_interfaces
+from scripts.bsvInterfaceBuilder import create_interfaces, list_available_interfaces
 
 def dir_path(string):
     if os.path.isdir(string):
@@ -267,7 +267,7 @@ def main():
     parser.add_argument('--path', type=dir_path, default='./')
     parser.add_argument('project_name')
     parser.add_argument('--test_dir', help='Set in case you want to separate in src and test folder', action='store_true')
-    parser.add_argument('--interfaces', help='Add interfaces to the BSV module', nargs='+')
+    parser.add_argument('--interfaces', help='Add interfaces to the BSV module (supported interfaces are "{}")'.format('", "'.join(list_available_interfaces())), nargs='+')
 
     args = None
     try:
