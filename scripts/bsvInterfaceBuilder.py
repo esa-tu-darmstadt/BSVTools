@@ -47,6 +47,10 @@ def create_interfaces(intf_list):
                 join_intf.dut_instances.append(i)
             for i in intf.dut_connections:
                 join_intf.dut_connections.append(i)
+            for i in intf.dut_init:
+                join_intf.dut_init.append(i)
+            for i in intf.dut_rules:
+                join_intf.dut_rules.append(i)
     return join_intf
 
 class Interface:
@@ -61,6 +65,8 @@ class Interface:
         self.dut_imports = []
         self.dut_instances = []
         self.dut_connections = []
+        self.dut_init = []
+        self.dut_rules = []
 
 class Interrupt(Interface):
     def __init__(self):
@@ -69,6 +75,12 @@ class Interrupt(Interface):
         self.rtl_interface_def = ["(* always_ready *) method Bool interrupt();"]
         self.rtl_module_inst = ["Reg#(Bool) interruptDReg <- mkDReg(False);"]
         self.rtl_interface_connections = ["method Bool interrupt = interruptDReg;"]
+        self.dut_rules = [
+            "rule finishOnInterrupt (dut.interrupt);",
+            "    $display(\"Interrupt received, finishing simulation\");",
+            "    $finish;",
+            "endrule",
+        ]
 
 class AXI4StreamMaster(Interface):
     def __init__(self):
@@ -128,14 +140,14 @@ class AXI4MMMaster(Interface):
             "interface m_rd = m_rd_inst.fab;",
             "interface m_wr = m_wr_inst.fab;",
         ]
-        self.dut_imports = ["BlueAXI", "Connectable"]
+        self.dut_imports = ["BlueAXI", "Connectable", "BRAM"]
         self.dut_instances = [
-            "AXI4_Slave_Rd#(AXI_ADDR_WIDTH, AXI_DATA_WIDTH, AXI_ID_WIDTH, AXI_USER_WIDTH) s_axi_rd_inst <- mkAXI4_Slave_Rd(2, 2);",
-            "AXI4_Slave_Wr#(AXI_ADDR_WIDTH, AXI_DATA_WIDTH, AXI_ID_WIDTH, AXI_USER_WIDTH) s_axi_wr_inst <- mkAXI4_Slave_Wr(2, 2, 2);",
+            "BRAM2PortBE#(Bit#(63), Bit#(AXI_DATA_WIDTH), TDiv#(AXI_DATA_WIDTH, 8)) bram <- mkBRAM2ServerBE(defaultValue);",
+            "BlueAXIBRAM#(AXI_ADDR_WIDTH, AXI_DATA_WIDTH, AXI_ID_WIDTH) s_axi_mem <- mkBlueAXIBRAM(bram.portA);",
         ]
         self.dut_connections = [
-            "mkConnection(dut.m_rd, s_axi_rd_inst.fab);",
-            "mkConnection(dut.m_wr, s_axi_wr_inst.fab);",
+            "mkConnection(dut.m_rd, s_axi_mem.rd);",
+            "mkConnection(dut.m_wr, s_axi_mem.wr);",
         ]
 
 class AXI4MMSlave(Interface):
@@ -213,6 +225,12 @@ class AXI4MMLiteSlave(Interface):
             "mkConnection(m_axi_lite_rd_inst.fab, dut.s_lite_rd);",
             "mkConnection(m_axi_lite_wr_inst.fab, dut.s_lite_wr);",
         ]
+        self.dut_rules = [
+            "rule dropWrSlaveResp;",
+            "    let r <- axi4_lite_write_response(m_axi_lite_wr_inst);",
+            "endrule",
+        ]
+        self.dut_init = ["axi4_lite_write(m_axi_lite_wr_inst, 'h00, 1);"]
 
 available_interfaces = {
     'interrupt': Interrupt(),

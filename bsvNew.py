@@ -212,9 +212,12 @@ testmain_temp = """package TestsMainTest;
         Stmt s = {{
             seq
                 $display("Hello World from the testbench.");
+{dut_init}
             endseq
         }};
         FSM testFSM <- mkFSM(s);
+
+{rules}
 
         method Action go();
             testFSM.start();
@@ -251,7 +254,9 @@ def create_base_src(path, project_name, test_dir, intfs):
             name = project_name,
             imports = bsvLineJoin(1, intfs.dut_imports),
             module_inst = bsvLineJoin(2, intfs.dut_instances),
-            connections = bsvLineJoin(2, intfs.dut_connections)
+            connections = bsvLineJoin(2, intfs.dut_connections),
+            dut_init = bsvLineJoin(4, intfs.dut_init),
+            rules = bsvLineJoin(2, intfs.dut_rules),
         ))
 
     with open("{}/{}/TestHelper.bsv".format(path, dir), "w") as f:
