@@ -141,8 +141,8 @@ class AXI4MMMaster(Interface):
             "typedef 0 AXI_USER_WIDTH;",
         ]
         self.rtl_interface_def = [
-            "(* prefix=\"M_AXI\" *) interface AXI4_Master_Rd_Fab#(AXI_ADDR_WIDTH, AXI_DATA_WIDTH, AXI_ID_WIDTH, AXI_USER_WIDTH) m_rd{name};",
-            "(* prefix=\"M_AXI\" *) interface AXI4_Master_Wr_Fab#(AXI_ADDR_WIDTH, AXI_DATA_WIDTH, AXI_ID_WIDTH, AXI_USER_WIDTH) m_wr{name};",
+            "(* prefix=\"M_AXI{name}\" *) interface AXI4_Master_Rd_Fab#(AXI_ADDR_WIDTH, AXI_DATA_WIDTH, AXI_ID_WIDTH, AXI_USER_WIDTH) m_rd{name};",
+            "(* prefix=\"M_AXI{name}\" *) interface AXI4_Master_Wr_Fab#(AXI_ADDR_WIDTH, AXI_DATA_WIDTH, AXI_ID_WIDTH, AXI_USER_WIDTH) m_wr{name};",
         ]
         self.rtl_module_inst = [
             "let m_rd_inst{name} <- mkAXI4_Master_Rd(1, 1, True);",
