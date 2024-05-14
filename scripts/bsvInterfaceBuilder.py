@@ -162,6 +162,50 @@ class AXI4MMMaster(Interface):
             "mkConnection(dut.m_wr{name}, s_axi_mem{name}.wr);",
         ]
 
+class AXI4MMLiteMaster(Interface):
+    def __init__(self):
+        super().__init__()
+        self.libraries = [
+            "https://github.com/esa-tu-darmstadt/BlueLib.git",
+            "https://github.com/esa-tu-darmstadt/BlueAXI.git",
+        ]
+        self.rtl_imports = ["BlueAXI"]
+        self.rtl_typedefs = [
+            "typedef 16 AXI_LITE_ADDR_WIDTH;",
+            "typedef 32 AXI_LITE_DATA_WIDTH;",
+        ]
+        self.rtl_interface_def = [
+            "(* prefix=\"M_AXI_LITE{name}\" *) interface AXI4_Lite_Master_Rd_Fab#(AXI_LITE_ADDR_WIDTH, AXI_LITE_DATA_WIDTH) m_lite_rd{name};",
+            "(* prefix=\"M_AXI_LITE{name}\" *) interface AXI4_Lite_Master_Wr_Fab#(AXI_LITE_ADDR_WIDTH, AXI_LITE_DATA_WIDTH) m_lite_wr{name};",
+        ]
+        self.rtl_module_inst = [
+            "let m_lite_rd_inst{name} <- mkAXI4_Lite_Master_Rd(2);",
+            "let m_lite_wr_inst{name} <- mkAXI4_Lite_Master_Wr(2);",
+        ]
+        self.rtl_interface_connections = [
+            "interface m_lite_rd{name} = m_lite_rd_inst{name}.fab;",
+            "interface m_lite_wr{name} = m_lite_wr_inst{name}.fab;",
+        ]
+        self.dut_imports = ["BlueAXI", "Connectable", "GetPut"]
+        self.dut_instances = [
+            "AXI4_Lite_Slave_Wr#(AXI_LITE_ADDR_WIDTH, AXI_LITE_DATA_WIDTH) s_axi_lite_wr{name}<- mkAXI4_Lite_Slave_Wr(16);",
+            "AXI4_Lite_Slave_Rd#(AXI_LITE_ADDR_WIDTH, AXI_LITE_DATA_WIDTH) s_axi_lite_rd{name}<- mkAXI4_Lite_Slave_Rd(16);",
+        ]
+        self.dut_connections = [
+            "mkConnection(dut.m_lite_wr{name}, s_axi_lite_wr{name}.fab);",
+            "mkConnection(dut.m_lite_rd{name}, s_axi_lite_rd{name}.fab);",
+        ]
+        self.dut_rules = [
+            "rule dropAxiLiteWrReqs{name};",
+            "    let r <- s_axi_lite_wr{name}.request.get();",
+            "    s_axi_lite_wr{name}.response.put(AXI4_Lite_Write_Rs_Pkg {{resp: OKAY}});",
+            "endrule",
+            "rule respondAxiLiteRdReqs{name};",
+            "    let r <- s_axi_lite_rd{name}.request.get();",
+            "    s_axi_lite_rd{name}.response.put(AXI4_Lite_Read_Rs_Pkg {{data: 'hcafe, resp: OKAY}});",
+            "endrule",
+        ]
+
 class AXI4MMSlave(Interface):
     def __init__(self):
         super().__init__()
@@ -249,6 +293,7 @@ available_interfaces = {
     'axis-master': AXI4StreamMaster(),
     'axis-slave': AXI4StreamSlave(),
     'axi-master': AXI4MMMaster(),
+    'axi-lite-master': AXI4MMLiteMaster(),
     'axi-slave': AXI4MMSlave(),
     'axi-lite-slave': AXI4MMLiteSlave(),
 }
