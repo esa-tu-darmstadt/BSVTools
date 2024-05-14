@@ -2,6 +2,7 @@
 
 import argparse, os, sys
 from bsvAdd import create_machine_file
+from scripts.bsvInterfaceBuilder import create_interfaces, list_available_interfaces
 
 def dir_path(string):
     if os.path.isdir(string):
@@ -28,6 +29,20 @@ def create_directories(path, test_dir):
     if test_dir:
         os.mkdir("{}/test".format(path))
     os.mkdir("{}/libraries".format(path))
+
+def create_libraries(path, lib_urls):
+    print("Fetching dependencies...")
+    for lib in lib_urls:
+        os.system("git -C {}/libraries clone {}".format(path, lib))
+
+def bsvLineJoin(indent_count, lines, default = ""):
+    if len(lines) == 0:
+        return default
+    indent = ""
+    for i in range(indent_count):
+        indent += "    "
+    lines = ["{}{}".format(indent, l) for l in lines]
+    return "\n".join(lines)
 
 makefile_temp = """###
 # DO NOT CHANGE
@@ -112,17 +127,26 @@ def create_gitignore(path):
     with open("{}/.gitignore".format(path), "w") as f:
         f.write(gitignore)
 
-top_module_temp = """package {0};
+top_module_temp = """package {name};
 
-interface {0};
-// Add custom interface definitions
+{imports}
+
+interface {name};
+{interface}
 endinterface
 
-module mk{0}({0});
+{typedefs}
+
+module mk{name}({name});
+{module_inst}
 
     rule doNothing;
         $display("Hello World!");
     endrule
+
+{rules}
+
+{interface_connections}
 
 endmodule
 
@@ -174,19 +198,26 @@ endpackage
 testmain_temp = """package TestsMainTest;
     import StmtFSM :: *;
     import TestHelper :: *;
-    import {0} :: *;
+{imports}
+    import {name} :: *;
 
     (* synthesize *)
     module [Module] mkTestsMainTest(TestHelper::TestHandler);
 
-        {0} dut <- mk{0}();
+        {name} dut <- mk{name}();
+{module_inst}
+
+{connections}
 
         Stmt s = {{
             seq
                 $display("Hello World from the testbench.");
+{dut_init}
             endseq
         }};
         FSM testFSM <- mkFSM(s);
+
+{rules}
 
         method Action go();
             testFSM.start();
@@ -200,10 +231,18 @@ testmain_temp = """package TestsMainTest;
 endpackage
 """
 
-def create_base_src(path, project_name, test_dir):
+def create_base_src(path, project_name, test_dir, intfs):
     print("Creating main module")
     with open("{}/src/{}.bsv".format(path, project_name), "w") as f:
-        f.write(top_module_temp.format(project_name))
+        f.write(top_module_temp.format(
+            name = project_name,
+            imports = bsvLineJoin(0, intfs.rtl_imports, "// Add imports"),
+            interface = bsvLineJoin(1, intfs.rtl_interface_def, "// Add custom interface definitions"),
+            typedefs = bsvLineJoin(0, intfs.rtl_typedefs),
+            module_inst = bsvLineJoin(1, intfs.rtl_module_inst),
+            rules = bsvLineJoin(1, intfs.rtl_rules),
+            interface_connections = bsvLineJoin(1, intfs.rtl_interface_connections)
+        ))
         
     dir = 'src' if not test_dir else 'test'
 
@@ -211,7 +250,14 @@ def create_base_src(path, project_name, test_dir):
         f.write(testbench_temp)
 
     with open("{}/{}/TestsMainTest.bsv".format(path, dir), "w") as f:
-        f.write(testmain_temp.format(project_name))
+        f.write(testmain_temp.format(
+            name = project_name,
+            imports = bsvLineJoin(1, intfs.dut_imports),
+            module_inst = bsvLineJoin(2, intfs.dut_instances),
+            connections = bsvLineJoin(2, intfs.dut_connections),
+            dut_init = bsvLineJoin(4, intfs.dut_init),
+            rules = bsvLineJoin(2, intfs.dut_rules),
+        ))
 
     with open("{}/{}/TestHelper.bsv".format(path, dir), "w") as f:
         f.write(testhelper_temp)
@@ -220,7 +266,8 @@ def main():
     parser = argparse.ArgumentParser(description="Create a new BSV project")
     parser.add_argument('--path', type=dir_path, default='./')
     parser.add_argument('project_name')
-    parser.add_argument('--test_dir', help='Set in case want to separate in src and test folder', action='store_true')
+    parser.add_argument('--test_dir', help='Set in case you want to separate in src and test folder', action='store_true')
+    parser.add_argument('--interfaces', help='Add interfaces to the BSV module (supported interfaces are "{}")'.format('", "'.join(list_available_interfaces())), nargs='+')
 
     args = None
     try:
@@ -241,11 +288,14 @@ def main():
         print("Project name needs to NOT have '-' in the name ant NOT be any special keyword. \nPlease chose a different name")
         sys.exit(1)
 
+    intfs = create_interfaces(args.interfaces)
+
     create_directories(args.path, args.test_dir)
+    create_libraries(args.path, intfs.libraries)
     create_machine_file(args.path)
     create_gitignore(args.path)
     create_makefile(args.path, args.project_name, args.test_dir)
-    create_base_src(args.path, args.project_name, args.test_dir)
+    create_base_src(args.path, args.project_name, args.test_dir, intfs)
 
 if __name__ == "__main__":
     main()
