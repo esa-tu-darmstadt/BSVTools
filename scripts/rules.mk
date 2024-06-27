@@ -144,6 +144,8 @@ clean:
 
 # clean build files except libraries
 BINS=$(addprefix $(BUILDDIR)/,$(notdir $(basename $(SRCS))))
+# also add libraries which specifically request a rebuild
+BINS+=$(addprefix $(BUILDDIR)/,$(notdir $(basename $(REBUILD_LIBRARIES))))
 clean_project:
 	$(SILENTCMD)$(RM) -f $(addsuffix .bo,$(BINS))
 	$(SILENTCMD)$(RM) -f $(addsuffix .ba,$(BINS))
