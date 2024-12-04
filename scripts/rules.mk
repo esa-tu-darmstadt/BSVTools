@@ -14,9 +14,10 @@ else
 endif
 
 OUTFILE?=out
+PWD?=$(CURDIR)
 SRCDIR?=$(PWD)/src
 BSV=bsc
-PWD?=$(shell pwd)
+
 BSV_TOOLS_PY:=$(BSV_TOOLS)/scripts/bsvTools.py
 BSV_DEPS:=$(BSV_TOOLS)/scripts/bsvDeps.py
 
@@ -95,7 +96,7 @@ ifneq (, $(ZIP))
 endif
 
 compile_top: $(BUILDDIR)/bsc_defines | directories
-	$(SILENTCMD)$(BSV) -elab -verilog $(COMPLETE_FLAGS) $(BSC_FLAGS) -g $(TOP_MODULE) -u $(SRCDIR)/$(MAIN_MODULE).bsv
+	$(SILENTCMD)$(BSV) -elab -verilog $(COMPLETE_FLAGS) $(shell cat $(BUILDDIR)/bsc_defines) -g $(TOP_MODULE) -u $(SRCDIR)/$(MAIN_MODULE).bsv
 
 else
 BASEPARAMS=-sim
@@ -124,7 +125,7 @@ $(BUILDDIR)/bsc_defines: force
 directories: $(USED_DIRECTORIES)
 
 compile: $(BUILDDIR)/bsc_defines | directories
-	$(SILENTCMD)$(BSV) -elab $(COMPLETE_FLAGS) $(BSC_FLAGS) -g $(TESTBENCH_MODULE) -u $(TESTBENCH_FILE)
+	$(SILENTCMD)$(BSV) -elab $(COMPLETE_FLAGS) $(shell cat $(BUILDDIR)/bsc_defines) -g $(TESTBENCH_MODULE) -u $(TESTBENCH_FILE)
 
 $(BUILDDIR)/$(OUTFILE): compile
 	@echo Linking $@...
