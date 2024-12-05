@@ -14,7 +14,7 @@ else
 endif
 
 OUTFILE?=out
-PWD?=$(CURDIR)
+PWD=$(CURDIR)
 SRCDIR?=$(PWD)/src
 BSV=bsc
 

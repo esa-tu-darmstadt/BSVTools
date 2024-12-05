@@ -99,11 +99,11 @@ CXX_NO_OPT := 1
 # VIVADO_ADD_PARAMS += 'ipx::associate_bus_interfaces -busif M_AXI -clock sconfig_axi_aclk [ipx::current_core]'
 
 # Add custom constraint files, Syntax: Filename,Load Order
-# CONSTRAINT_FILES += "$(PWD)/constraints/custom.xdc,LATE"
+# CONSTRAINT_FILES += "$(CURDIR)/constraints/custom.xdc,LATE"
 
 # Do not change: Load libraries such as BlueAXI or BlueLib
-ifneq ("$(wildcard $(PWD)/libraries/*/*.mk)", "")
-include $(PWD)/libraries/*/*.mk
+ifneq ("$(wildcard $(CURDIR)/libraries/*/*.mk)", "")
+include $(CURDIR)/libraries/*/*.mk
 endif
 
 # Do not change: Include base makefile
@@ -113,7 +113,7 @@ include $(BSV_TOOLS)/scripts/rules.mk
 def create_makefile(path, project_name, test_dir):
     print("Creating makefile")
     dir = 'src' if not test_dir else 'test'
-    test_var = '' if not test_dir else 'TEST_DIR=$(PWD)/test'
+    test_var = '' if not test_dir else 'TEST_DIR=$(CURDIR)/test'
     with open("{}/Makefile".format(path), "w") as f:
         f.write(makefile_temp.format(project_name, dir, test_var))
 
