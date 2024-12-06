@@ -14,9 +14,10 @@ else
 endif
 
 OUTFILE?=out
+PWD=$(CURDIR)
 SRCDIR?=$(PWD)/src
 BSV=bsc
-PWD?=$(shell pwd)
+
 BSV_TOOLS_PY:=$(BSV_TOOLS)/scripts/bsvTools.py
 BSV_DEPS:=$(BSV_TOOLS)/scripts/bsvDeps.py
 
@@ -119,7 +120,7 @@ all: sim
 
 .PHONY: force
 $(BUILDDIR)/bsc_defines: force
-	@echo '$(BSC_FLAGS)' | cmp -s - $@ || (echo '$(BSC_FLAGS)' > $@ ; $(MAKE) clean_project)
+	@echo '$(shell echo $(BSC_FLAGS) | sed -r "s/'/'\\\''/g")' | cmp -s - $@ || (echo '$(shell echo $(BSC_FLAGS) | sed -r "s/'/'\\\''/g")' > $@ ; $(MAKE) clean_project)
 
 directories: $(USED_DIRECTORIES)
 
