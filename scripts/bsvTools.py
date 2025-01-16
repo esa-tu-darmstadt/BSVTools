@@ -139,7 +139,7 @@ def flattenVerilogIncludes(src, dst):
         dstFilename = dst + '/' + os.path.basename(src)
         with open(dstFilename, "w") as dst_file:
             for l in src_file:
-                m = re.search("^\s*`include \"(.*)\"", l)
+                m = re.search(r'^\s*`include \"(.*)\"', l)
                 if m:
                     dst_file.write("`include \"" + os.path.basename(m.group(1)) + "\"")
                 else:
