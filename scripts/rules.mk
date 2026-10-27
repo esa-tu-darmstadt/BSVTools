@@ -6,11 +6,9 @@ ifndef VERBOSE
 	SILENTCMD=@
 endif
 
-ZIP:=""
-ifeq (, $(shell which zip))
+ZIP:=$(shell which zip 2>/dev/null)
+ifeq (, $(ZIP))
 $(warning "No zip in $(PATH), make ip will not generate zip file")
-else
-	ZIP:=$(shell which zip)
 endif
 
 OUTFILE?=out
